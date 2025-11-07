@@ -55,7 +55,10 @@ class Chart {
 
         // Custom benchmark colors: Orange for the first, then the rest of d3.schemeSet1
         const d3SchemeSet1 = d3.schemeSet1;
-        this.benchmarkColors = ["#ff7f00", ...d3SchemeSet1.slice(1)];
+        this.benchmarkColors = [
+            "#c3e0a1", "#4f8c4d", "#f3b7ba", "#d6302c", "#fec087",
+            "#f9802c", "#c7b6d9", "#6a4095", "#ffffc9", "#945731"
+        ];
         this.compareSymbols = []; // Initialize symbol storage
 
         // === ZOOM + PAN ===
@@ -163,7 +166,7 @@ class Chart {
         const volGen = d3.line()
             .defined(d => d && d.dateObj && d.volatility != null)
             .x(d => this.x(d.dateObj))
-            .y(d => this.yVolat(d.volatility)); // UPDATED: Use yVolat
+            .y(d => this.yVolat(d.volatility));
 
         this.priceGroup.attr("d", priceGen(this.priceGroup.datum() || []));
 
@@ -172,6 +175,7 @@ class Chart {
             .attr("y", d => (d.volume != null) ? this.yVol(d.volume) : this.height)
             .attr("height", d => (d.volume != null) ? (this.height - this.yVol(d.volume)) : 0);
 
+        // Update SMA paths (data bound path contains style, so only 'd' needs updating)
         this.smaGroup.selectAll("path").each((d, i, nodes) => {
             const gen = smaGenFactory(d.field);
             d3.select(nodes[i]).attr("d", gen(d.data));
@@ -228,7 +232,7 @@ class Chart {
         const volGen = d3.line()
             .defined(d => d && d.dateObj && d.volatility != null)
             .x(d => this.x(d.dateObj))
-            .y(d => this.yVolat(d.volatility)); // UPDATED: Use yVolat
+            .y(d => this.yVolat(d.volatility));
 
         // price line
         this.priceGroup.datum(this.priceGroup.datum() || [])
@@ -240,7 +244,7 @@ class Chart {
             .attr("y", d => (d.volume != null) ? this.yVol(d.volume) : this.height)
             .attr("height", d => (d.volume != null) ? (this.height - this.yVol(d.volume)) : 0);
 
-        // SMA lines
+        // SMA lines (data bound path contains style, so only 'd' needs updating)
         this.smaGroup.selectAll("path").each((d, i, nodes) => {
             const datum = d;
             const field = datum.field;
@@ -311,7 +315,7 @@ class Chart {
         this.rsiGroup.attr("transform", `translate(0, ${this.height + 40})`);
         this.rsiAxisG.attr("transform", `translate(0, ${this.rsiHeight})`);
 
-        // --- FIX: Calculate Y domain to include all normalized benchmark data ---
+        // --- Calculate Y domain to include all normalized benchmark data ---
         let allYValues = data.map(d => d.close);
         this.currentBenchmarks.forEach(series => {
             // Only use normalized values that are not null
@@ -324,11 +328,10 @@ class Chart {
 
         this.x.domain(d3.extent(data, d => d.dateObj));
         this.y.domain([minY, maxY]); // Set domain using min/max of main and benchmark data
-        // --- END FIX ---
 
         this.yVol.domain([0, d3.max(data, d => d.volume || 0)]);
 
-        // NEW: Volatility Scale Domain
+        // Volatility Scale Domain
         if (opts.showVolatility) {
             this.yVolat.domain([0, d3.max(data, d => d.volatility || 0) * 1.05]);
             this.yVolatAxisG.style("display", null);
@@ -368,13 +371,25 @@ class Chart {
         // SMA
         if (opts.showSMA) {
             const smaLines = [
-                { data, field: "sma7", color: "yellow" },
-                { data, field: "sma30", color: "green" }
+                {
+                    data,
+                    field: "sma7",
+                    color: "#87CEFA", // LightSkyBlue
+                    style: "5,5" // Dashed (5 units on, 5 units off)
+                },
+                {
+                    data,
+                    field: "sma30",
+                    color: "#AFEEEE", // PaleTurquoise
+                    style: "1,3" // Dotted (1 unit on, 3 units off)
+                }
             ];
             this.smaGroup.selectAll("path").data(smaLines)
                 .join("path")
                 .attr("stroke", d => d.color)
+                .attr("stroke-dasharray", d => d.style) // ⭐ ADDED: Apply stroke style ⭐
                 .attr("fill", "none")
+                .attr("stroke-width", 1.5) // Added stroke-width for visibility
                 .attr("d", d => {
                     const gen = d3.line()
                         .defined(e => e[d.field] != null)
@@ -495,8 +510,13 @@ class Chart {
                 <span style="color:#1f77b4">Close</span>: <b>$${d.close.toFixed(2)}</b>`; // Main Price: #1f77b4
 
         if (d.volume != null) html += `<br>Volume: ${d.volume.toLocaleString()}`;
-        if (d.sma7 != null) html += `<br><span style="color:yellow">SMA7</span>: ${d.sma7.toFixed(2)}`;
-        if (d.sma30 != null) html += `<br><span style="color:green">SMA30</span>: ${d.sma30.toFixed(2)}`;
+
+        // SMA 7: Dashed (#87CEFA)
+        if (d.sma7 != null) html += `<br><span style="color:#87CEFA"><span style="display:inline-block; width:15px; height:1px; border-bottom: 2px dashed #87CEFA; margin-right:5px; vertical-align:middle;"></span>SMA7</span>: ${d.sma7.toFixed(2)}`;
+
+        // SMA 30: Dotted (#AFEEEE)
+        if (d.sma30 != null) html += `<br><span style="color:#AFEEEE"><span style="display:inline-block; width:15px; height:1px; border-bottom: 2px dotted #AFEEEE; margin-right:5px; vertical-align:middle;"></span>SMA30</span>: ${d.sma30.toFixed(2)}`;
+
         if (d.volatility != null) html += `<br><span style="color:purple">Volatility(14)</span>: ${d.volatility.toFixed(3)}`;
         if (d.rsi != null) html += `<br><span style="color:#d62728">RSI(14)</span>: ${d.rsi.toFixed(2)}`;
 
@@ -508,7 +528,9 @@ class Chart {
                 const point = series[i];
                 const symbol = this.compareSymbols[idx]; // Use stored symbol name
                 if (point && point.norm != null) {
-                    html += `<br><span style="color:${this.benchmarkColors[idx % this.benchmarkColors.length]}">${symbol}</span>: $${point.norm.toFixed(2)}`;
+                    const benchColor = this.benchmarkColors[idx % this.benchmarkColors.length];
+                    // Benchmarks are solid lines by default
+                    html += `<br><span style="color:${benchColor}"><span style="display:inline-block; width:15px; height:1px; border-bottom: 2px solid ${benchColor}; margin-right:5px; vertical-align:middle;"></span>${symbol}</span>: $${point.norm.toFixed(2)}`;
                 }
             });
         }
