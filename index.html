@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MarketScope - Interactive stock visualization with volatility, volume, SMA overlays and benchmark comparison</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>ms</h1>
+        <h2>MarketScope</h2>
+    </header>
+
+    <aside>
+
+        <div class="controls">
+            <label for="symbol-select">Company:</label>
+            <select id="symbol-select"></select>
+
+            <label>Compare with:</label>
+            <select id="compare-select" multiple size="6"></select>
+
+            <label for="range-select">Range:</label>
+            <select id="range-select">
+                <option value="60">60 days</option>
+                <option value="120">120 days</option>
+                <option value="240">240 days</option>
+            </select>
+        </div>
+
+        <div class="controls">
+            <label><input type="checkbox" id="sma-toggle" checked> Show SMA (7 & 30)</label>
+            <label><input type="checkbox" id="volume-toggle" checked> Show Volume Overlay</label>
+            <label><input type="checkbox" id="volatility-toggle"> Show Volatility</label>
+        </div>
+
+    </aside>
+
+    <main>
+        <div id="chart-area"></div>
+    </main>
+
+    <footer>
+        <h3>Interactive stock visualization</h3>
+        <h4>with volatility, volume, SMA overlays and benchmark comparison</h4>
+    </footer>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/processor.js"></script>
+    <script src="js/chart.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+
+</html>
