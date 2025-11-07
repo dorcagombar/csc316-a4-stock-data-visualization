@@ -30,7 +30,7 @@ class Chart {
             .attr("x", -this.height / 2) // Center along the axis
             .attr("text-anchor", "middle")
             .attr("font-size", "14px")
-            .text("Price / Value");
+            .text("Price / Value in USD");
 
         // NEW: Volatility Y-Axis Group on the right
         this.yVolatAxisG = this.g.append("g")
@@ -492,7 +492,7 @@ class Chart {
 
         // tooltip values
         let html = `<strong>${d3.timeFormat("%Y-%m-%d")(d.dateObj)}</strong><br>
-                <span style="color:#1f77b4">Close</span>: <b>${d.close.toFixed(2)}</b>`; // Main Price: #1f77b4
+                <span style="color:#1f77b4">Close</span>: <b>$${d.close.toFixed(2)}</b>`; // Main Price: #1f77b4
 
         if (d.volume != null) html += `<br>Volume: ${d.volume.toLocaleString()}`;
         if (d.sma7 != null) html += `<br><span style="color:yellow">SMA7</span>: ${d.sma7.toFixed(2)}`;
@@ -508,7 +508,7 @@ class Chart {
                 const point = series[i];
                 const symbol = this.compareSymbols[idx]; // Use stored symbol name
                 if (point && point.norm != null) {
-                    html += `<br><span style="color:${this.benchmarkColors[idx % this.benchmarkColors.length]}">${symbol}</span>: ${point.norm.toFixed(2)}`;
+                    html += `<br><span style="color:${this.benchmarkColors[idx % this.benchmarkColors.length]}">${symbol}</span>: $${point.norm.toFixed(2)}`;
                 }
             });
         }
